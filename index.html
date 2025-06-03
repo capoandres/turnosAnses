@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Agenda de Turnos</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 2rem;
+    }
+    form, .turnos, .admin {
+      max-width: 500px;
+      margin-bottom: 2rem;
+    }
+    label {
+      display: block;
+      margin-top: 1rem;
+    }
+    input, select, button {
+      width: 100%;
+      padding: 0.5rem;
+      margin-top: 0.5rem;
+    }
+    .mensaje {
+      margin-top: 1rem;
+      font-weight: bold;
+    }
+    .mensaje.success {
+      color: green;
+    }
+    .mensaje.error {
+      color: red;
+    }
+  </style>
+</head>
+<body>
+  <h1>Agenda tu turno - 26 de mayo de 2025</h1>
+
+  <form id="formTurno">
+    <label>Nombre y Apellido:
+      <input type="text" id="nombre" required>
+    </label>
+
+    <label>DNI:
+      <input type="text" id="dni" required pattern="\d+">
+    </label>
+
+    <label>Teléfono de contacto:
+      <input type="tel" id="telefono" required>
+    </label>
+
+    <label>Hora:
+      <select id="hora" required></select>
+    </label>
+
+    <button type="submit">Reservar turno</button>
+  </form>
+
+  <div id="mensajeConfirmacion" class="mensaje"></div>
+
+  <div class="admin">
+    <h2>Ver Turnos Reservados</h2>
+    <label>Contraseña de administrador:
+      <input type="password" id="claveAdmin">
+    </label>
+    <button onclick="verTurnos()">Ver listado</button>
+  </div>
+
+  <div id="contenedorTurnos" style="display:none;">
+    <h3>Turnos reservados</h3>
+    <ul id="listaTurnos" class="turnos"></ul>
+  </div>
+
+  <script>
+    const form = document.getElementById("formTurno");
+    const listaTurnos = document.getElementById("listaTurnos");
+    const mensaje = document.getElementById("mensajeConfirmacion");
+    const horaSelect = document.getElementById("hora");
+
+    const turnos = {};
+
+    function generarHorarios() {
+      let horarios = [];
+      let hora = 8 * 60;
+
+      while (hora <= 13 * 60) {
+        let horas = String(Math.floor(hora / 60)).padStart(2, '0');
+        let minutos = String(hora % 60).padStart(2, '0');
+        horarios.push(`${horas}:${minutos}`);
+        hora += 30;
+      }
+
+      horarios.forEach(hora => {
+        const option = document.createElement("option");
+        option.value = hora;
+        option.textContent = hora;
+        horaSelect.appendChild(option);
+      });
+    }
+
+    generarHorarios();
+
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+      const nombre = document.getElementById("nombre").value.trim();
+      const dni = document.getElementById("dni").value.trim();
+      const telefono = document.getElementById("telefono").value.trim();
+      const hora = document.getElementById("hora").value;
+
+      const turno = { nombre, dni, telefono };
+
+      if (!turnos[hora]) {
+        turnos[hora] = [];
+      }
+
+      if (turnos[hora].length >= 15) {
+        mensaje.textContent = "Ya se completaron los 15 turnos para ese horario.";
+        mensaje.className = "mensaje error";
+        return;
+      }
+
+      turnos[hora].push(turno);
+
+      const li = document.createElement("li");
+      li.textContent = `26/05/2025 - ${hora} - ${nombre} (DNI: ${dni}, Tel: ${telefono})`;
+      listaTurnos.appendChild(li);
+
+      mensaje.textContent = "¡Turno reservado con éxito!";
+      mensaje.className = "mensaje success";
+      form.reset();
+    });
+
+    function verTurnos() {
+      const clave = document.getElementById("claveAdmin").value;
+      if (clave === "admin123") {
+        document.getElementById("contenedorTurnos").style.display = "block";
+      } else {
+        alert("Contraseña incorrecta");
+      }
+    }
+  </script>
+</body>
+</html>
